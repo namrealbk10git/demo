@@ -9,6 +9,8 @@ var usersRouter = require('./routes/users');
 
 var sinhvien = require('./routes/sinhvien');
 
+var login = require('./routes/login');
+
 var app = express();
 
 // view engine setup
@@ -24,6 +26,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/sinhVien', sinhvien);
+app.use('/login', login);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -45,17 +48,54 @@ app.use(function(err, req, res, next) {
 /// connect MYSQL DB
 //// SQL
 var mysql      = require('mysql');
-var connectionMysqlDb = mysql.createConnection({
-  host     : 'localhost',
-  user     : 'root',
-  password : '',
-  database : 'ql_sv'
-});
-connectionMysqlDb.connect((err)=>{
-  if(err) {throw err;}
-  console.log("____CONNECTED MYSQL DB____");
-});
+// var connectionMysqlDb = mysql.createConnection({
+//   host     : '103.97.125.254',
+//   user     : 'namstork_admin',
+//   password : 'vietnam999999999',
+//   database : 'namstork_Demo'
+// });
+// connectionMysqlDb.connect((err)=>{
+//   if(err) {throw err;}
+//   console.log("____CONNECTED MYSQL DB____");
+// });
+// global.connectionMysqlDb = connectionMysqlDb;
+
+
+var connectionMysqlDb;
+var db_config = {
+  host     : '103.97.125.254',
+  user     : 'namstork_admin',
+  password : 'vietnam999999999',
+  database : 'namstork_Demo'
+}
+
+function handleDisconnect() {
+  connectionMysqlDb = mysql.createConnection(db_config); // Recreate the connection, since
+                                                  // the old one cannot be reused.
+
+  connectionMysqlDb.connect(function(err) {              // The server is either down
+    if(err) {                                     // or restarting (takes a while sometimes).
+      console.log('error when connecting to db:', err);
+      setTimeout(handleDisconnect, 2000); // We introduce a delay before attempting to reconnect,
+    }
+    console.log("____CONNECTED MYSQL DB____");                                     // to avoid a hot loop, and to allow our node script to
+  });                                     // process asynchronous requests in the meantime.
+                                          // If you're also serving http, display a 503 error.
+   connectionMysqlDb.on('error', function(err) {
+    console.log('db error', err);
+    if(err.code === 'PROTOCOL_CONNECTION_LOST') { // Connection to the MySQL server is usually
+      handleDisconnect();                         // lost due to either server restart, or a
+    } else {                                      // connnection idle timeout (the wait_timeout
+      throw err;                                  // server variable configures this)
+    }
+  });
+
 global.connectionMysqlDb = connectionMysqlDb;
+  
+}
+
+handleDisconnect();
+
 
 
 module.exports = app;
