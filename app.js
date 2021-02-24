@@ -11,6 +11,7 @@ var sinhvien = require('./routes/sinhvien');
 
 var login = require('./routes/login');
 
+var notification = require('./routes/notification');
 var app = express();
 
 // view engine setup
@@ -27,7 +28,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/sinhVien', sinhvien);
 app.use('/login', login);
-
+app.use('/notification', notification);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
